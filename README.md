@@ -23,5 +23,10 @@ Run on an iOS simulator, then tap:
   (`@capgo/capacitor-inappbrowser`), waits 2s, then calls the same `openFile()`. Expected: the PDF
   preview appears on top. Actual: nothing is shown, the in-app browser stays in front, and the log
   on the page shows that `openFile()` resolved.
+- **Run double open** — writes `first.pdf` and `second.pdf`, calls `openFile()` for `first.pdf`, awaits
+  it, waits 300 ms, then calls `openFile()` for `second.pdf`. `openFile()` resolves as soon as
+  `presentPreview(animated:)` returns (~10 ms), before Quick Look shows the preview. Expected: the
+  second call is rejected or waits until the first preview is dismissed. Actual: both calls resolve
+  and two previews are stacked (`second` on top of `first`), so the user has to close both.
 
-Verified with Capacitor 8.5.2, file-opener 8.0.4, Xcode 26.5, iPhone 17 simulator on iOS 26.2.
+Verified with Capacitor 8.5.2, file-opener 8.0.5, Xcode 26.5, iPhone 17 simulator on iOS 26.2.

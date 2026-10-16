@@ -10,15 +10,16 @@ const log = (message) => {
   output.textContent += `${message}\n`;
 };
 
+const writePdf = async (path) => {
+  const { uri } = await Filesystem.writeFile({ path, data: PDF_BASE64, directory: Directory.Cache });
+  log(`wrote ${uri}`);
+  return uri;
+};
+
 const run = async (presentModal) => {
   output.textContent = '';
   try {
-    const { uri } = await Filesystem.writeFile({
-      path: 'repro.pdf',
-      data: PDF_BASE64,
-      directory: Directory.Cache,
-    });
-    log(`wrote ${uri}`);
+    const uri = await writePdf('repro.pdf');
 
     if (presentModal) {
       await InAppBrowser.openWebView({
@@ -36,5 +37,27 @@ const run = async (presentModal) => {
   }
 };
 
+const runDoubleOpen = async () => {
+  output.textContent = '';
+  try {
+    const firstUri = await writePdf('first.pdf');
+    const secondUri = await writePdf('second.pdf');
+    const start = performance.now();
+    const elapsed = () => `+${Math.round(performance.now() - start)} ms`;
+
+    log(`${elapsed()} openFile(first.pdf) called`);
+    await FileOpener.openFile({ path: firstUri, mimeType: 'application/pdf' });
+    log(`${elapsed()} openFile(first.pdf) resolved, waiting 300 ms`);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    log(`${elapsed()} openFile(second.pdf) called`);
+    await FileOpener.openFile({ path: secondUri, mimeType: 'application/pdf' });
+    log(`${elapsed()} openFile(second.pdf) resolved`);
+  } catch (error) {
+    log(`openFile() rejected: ${error?.message ?? String(error)}`);
+  }
+};
+
 document.querySelector('#control').addEventListener('click', () => void run(false));
 document.querySelector('#repro').addEventListener('click', () => void run(true));
+document.querySelector('#double').addEventListener('click', () => void runDoubleOpen());
