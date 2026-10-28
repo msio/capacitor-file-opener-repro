@@ -29,4 +29,12 @@ Run on an iOS simulator, then tap:
   second call is rejected or waits until the first preview is dismissed. Actual: both calls resolve
   and two previews are stacked (`second` on top of `first`), so the user has to close both.
 
+- **Run missing file** (Android) — calls `openFile()` with the `file://` URI of a cache file that does
+  not exist. Expected: rejected with `code=FILE_NOT_FOUND`. Actual: `openFile()` resolves and the PDF
+  viewer shows "Cannot display PDF". `getUriByPath` turns the path into a `FileProvider` URI before
+  `isFileExists` runs, and `DocumentFile.fromSingleUri(...).exists()` is always true for a
+  `FileProvider` URI. To run it: `npx cap sync android`, then open `android/` in Android Studio.
+
+Missing file verified with file-opener 8.1.0 on an Android 16 (API 36) emulator.
+
 Verified with Capacitor 8.5.2, file-opener 8.0.5, Xcode 26.5, iPhone 17 simulator on iOS 26.2.

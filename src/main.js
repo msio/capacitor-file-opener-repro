@@ -58,6 +58,19 @@ const runDoubleOpen = async () => {
   }
 };
 
+const runMissingFile = async () => {
+  output.textContent = '';
+  try {
+    const { uri } = await Filesystem.getUri({ path: 'does-not-exist.pdf', directory: Directory.Cache });
+    log(`openFile(${uri}) called for a file that does not exist`);
+    await FileOpener.openFile({ path: uri, mimeType: 'application/pdf' });
+    log('openFile() resolved');
+  } catch (error) {
+    log(`openFile() rejected: code=${error?.code} message=${error?.message ?? String(error)}`);
+  }
+};
+
 document.querySelector('#control').addEventListener('click', () => void run(false));
 document.querySelector('#repro').addEventListener('click', () => void run(true));
 document.querySelector('#double').addEventListener('click', () => void runDoubleOpen());
+document.querySelector('#missing').addEventListener('click', () => void runMissingFile());
